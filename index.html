@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<!--
+  Test Mardollo — Progressive Web App (Vasca 25m, 100% Locale / GDPR-Free)
+  Copyright (C) 2026 Zonta Mattia
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Affero General Public License for more details.
+-->
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0284c7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Test Mardollo" />
+  <title>Test Mardollo — Vasca 25m</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
+  <style>
+    :root{--bg:#0f172a;--surf:#1e293b;--surf2:#334155;--brd:#475569;--txt:#f8fafc;--mut:#94a3b8;--blu:#00a2ff;--grn:#60d937;--warn:#f59e0b;--r:14px;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.4;min-height:100dvh;overflow-x:hidden}
+    .screen{display:none;width:100%;min-height:100dvh;padding:calc(14px + var(--st)) 14px calc(24px + var(--sb));max-width:720px;margin:0 auto}
+    .screen.active{display:flex;flex-direction:column;gap:14px}
+    .app-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--surf2)}
+    .brand h1{margin:0;font-size:1.3rem;letter-spacing:.4px}
+    .brand small{color:var(--mut);font-size:.8rem}
+    .pool-badge{background:rgba(0,162,255,.16);border:1px solid var(--blu);color:#7dd3fc;font-weight:700;font-size:.82rem;padding:5px 11px;border-radius:999px;white-space:nowrap}
+    .card{background:var(--surf);border:1px solid var(--surf2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
+    .card-title{margin:0;font-size:.98rem;font-weight:700;color:#e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .opt{font-size:.7rem;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media(max-width:420px){.grid-3{grid-template-columns:repeat(2,1fr)}}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{font-size:.82rem;color:#cbd5e1;font-weight:600}
+    input[type="text"],input[type="number"],select,textarea{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--brd);border-radius:10px;padding:10px 12px;font-size:1rem;font-family:inherit;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--blu)}
+    textarea{resize:vertical;min-height:72px}
+    .notice{border-radius:12px;padding:11px 13px;font-size:.84rem;display:flex;flex-direction:column;gap:4px}
+    .notice.privacy{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.45);color:#d1fae5}
+    .notice.safety{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);color:#fef3c7}
+    .btn{border:none;border-radius:12px;padding:14px 16px;font-size:1rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;color:#fff;width:100%;transition:transform .06s}
+    .btn:active{transform:scale(.985)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .btn-primary{background:linear-gradient(135deg,#0284c7,#00a2ff);font-size:1.05rem;padding:15px}
+    .btn-green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+    .btn-danger{background:#991b1b;border:1px solid #ef4444;color:#fee2e2}
+    .btn-secondary{background:var(--surf2);color:#e2e8f0;border:1px solid var(--brd)}
+    .btn-small{padding:9px 12px;font-size:.86rem;border-radius:10px;width:auto}
+    .btn-confirm-warn{background:var(--warn)!important;color:#0f172a!important;border-color:#fbbf24!important}
+
+    /* Schermata 2: Cronometro */
+    #screen-timer{padding:calc(10px + var(--st)) 10px calc(12px + var(--sb));height:100dvh;max-height:100dvh;overflow:hidden;gap:8px;user-select:none;-webkit-user-select:none}
+    .timer-topbar{display:flex;justify-content:space-between;align-items:center;background:var(--surf);padding:8px 12px;border-radius:12px;font-size:.85rem;flex-shrink:0}
+    #giant-tap-btn{flex:1 1 auto;width:100%;border:none;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;color:#fff;cursor:pointer;touch-action:manipulation;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.35);transition:background .12s,transform .05s}
+    #giant-tap-btn:active{transform:scale(.99)}
+    #giant-tap-btn.state-ready{background:linear-gradient(160deg,#16a34a,#15803d)}
+    #giant-tap-btn.state-apnea{background:linear-gradient(160deg,#00a2ff,#0369a1)}
+    #giant-tap-btn.state-recupero{background:linear-gradient(160deg,#4cc726,#15803d)}
+    .tap-pill{background:rgba(0,0,0,.28);padding:6px 16px;border-radius:999px;font-size:1rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+    .tap-countdown{font-size:clamp(3.3rem,15vw,5.4rem);font-weight:900;font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 3px 12px rgba(0,0,0,.25)}
+    .tap-stats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;background:rgba(0,0,0,.22);padding:10px 14px;border-radius:14px;font-variant-numeric:tabular-nums}
+    .tap-stat{display:flex;flex-direction:column;align-items:center;min-width:74px}
+    .tap-stat .lbl{font-size:.7rem;opacity:.85;text-transform:uppercase;font-weight:600}
+    .tap-stat .val{font-size:1.2rem;font-weight:800}
+    /*.tap-hint{font-size:1rem;font-weight:700;max-width:340px}*/
+    .tap-hint{font-size:1rem;font-weight:700;max-width:340px}
+    .tap-last{font-size:.86rem;opacity:.92;min-height:1.2em}
+    .timer-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0}
+    .timer-controls .btn{padding:12px 8px;font-size:.86rem}
+
+    /* Modal Residuo */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.92);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}
+    .modal-backdrop.open{display:flex}
+    .modal-card{background:var(--surf);border:1px solid var(--brd);border-radius:18px;width:100%;max-width:440px;padding:18px;display:flex;flex-direction:column;gap:14px}
+    .modal-card h2{margin:0;font-size:1.2rem;text-align:center}
+    .residual-box{text-align:center;background:var(--bg);border-radius:14px;padding:12px;border:1px solid var(--surf2)}
+    .residual-big{font-size:2.3rem;font-weight:900;color:var(--blu);font-variant-numeric:tabular-nums}
+    .residual-formula{font-size:.88rem;color:#cbd5e1;margin-top:4px}
+    .slider-row{display:flex;align-items:center;gap:10px}
+    .slider-row input[type="range"]{flex:1;height:36px;accent-color:var(--blu)}
+    .chips{display:flex;flex-wrap:wrap;gap:7px}
+    .chip{background:var(--bg);color:#e2e8f0;border:1px solid var(--brd);border-radius:999px;padding:8px 13px;font-size:.85rem;font-weight:600;cursor:pointer;touch-action:manipulation}
+    .chip.selected{background:var(--blu);border-color:var(--blu);color:#082f49;font-weight:800}
+
+    /* Schermata 3: Post-Test */
+    .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    @media(min-width:520px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+    .kpi-box{background:var(--bg);border:1px solid var(--surf2);border-radius:12px;padding:10px;text-align:center}
+    .kpi-box .k-l{font-size:.7rem;color:var(--mut);text-transform:uppercase;font-weight:700}
+    .kpi-box .k-v{font-size:1.22rem;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+    .k-v.blu{color:var(--blu)}
+    .k-v.grn{color:var(--grn)}
+    .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--surf2)}
+    table.data-table{width:100%;border-collapse:collapse;font-size:.83rem;font-variant-numeric:tabular-nums}
+    table.data-table th,table.data-table td{padding:7px 5px;text-align:center;border-bottom:1px solid var(--surf2)}
+    table.data-table thead th{background:var(--bg);color:#e2e8f0;font-weight:700}
+    table.data-table thead tr.sub th{font-size:.69rem;font-weight:600;color:var(--mut);padding-top:2px}
+    table.data-table tbody tr:last-child td{border-bottom:none}
+    .sense-row{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:1px solid rgba(71,85,105,.45)}
+    .sense-row:last-of-type{border-bottom:none}
+    .sense-head{display:flex;justify-content:space-between;font-size:.88rem;font-weight:600}
+    .scale-03{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+    .scale-btn{background:var(--bg);border:1px solid var(--brd);color:#cbd5e1;border-radius:9px;padding:8px 4px;font-size:.77rem;font-weight:600;cursor:pointer;touch-action:manipulation}
+    .scale-btn.active{background:var(--blu);border-color:var(--blu);color:#082f49;font-weight:800}
+    .chart-box{background:#fff;border-radius:12px;padding:8px}
+    #preview-canvas{width:100%;height:auto;display:block}
+    .actions-stack{display:flex;flex-direction:column;gap:10px}
+    .app-footer{text-align:center;font-size:.73rem;color:var(--mut);padding-top:6px}
+    .app-footer a{color:#7dd3fc;text-decoration:none}
+    .toast{position:fixed;bottom:calc(18px + var(--sb));left:50%;transform:translateX(-50%);background:var(--bg);color:var(--txt);border:1px solid var(--blu);padding:10px 16px;border-radius:999px;font-size:.86rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2000;max-width:92vw;text-align:center}
+    .toast.show{opacity:1}
+  </style>
+</head>
+<body>
+
+  <!-- SCHERMATA 1: PRE-TEST -->
+  <section id="screen-setup" class="screen active" aria-label="Impostazione Pre-Test">
+    <header class="app-header">
+      <div class="brand">
+        <h1>TEST MARDOLLO</h1>
+        <small>6 minuti continui • Apnea Dinamica / Recupero Attivo</small>
+      </div>
+      <div class="pool-badge">VASCA 25m</div>
+    </header>
+
+    <div class="card">
+      <h2 class="card-title">Identificativo Atleta <span class="opt">Facoltativo</span></h2>
+      <div class="field">
+        <label for="athlete-id">Nome / Cognome / ID Atleta</label>
+        <input id="athlete-id" type="text" placeholder="Es. Mario Rossi" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Profilo Antropometrico e Livello <span class="opt">Facoltativi</span></h2>
+      <div class="grid-2">
+        <div class="field">
+          <label for="athlete-age">Età (anni)</label>
+          <input id="athlete-age" type="number" min="8" max="99" step="1" inputmode="numeric" placeholder="Es. 32" />
+        </div>
+        <div class="field">
+          <label for="athlete-sex">Sesso</label>
+          <select id="athlete-sex">
+            <option value="">— Non specificato —</option>
+            <option value="M">M</option>
+            <option value="F">F</option>
+            <option value="Altro">Altro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="athlete-height">Altezza (cm)</label>
+          <input id="athlete-height" type="number" min="100" max="240" step="1" inputmode="numeric" placeholder="Es. 178" />
+        </div>
+        <div class="field">
+          <label for="athlete-weight">Peso (kg)</label>
+          <input id="athlete-weight" type="number" min="30" max="180" step="0.1" inputmode="decimal" placeholder="Es. 74.5" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="athlete-level">Livello</label>
+        <select id="athlete-level">
+          <option value="">— Non specificato —</option>
+          <option value="Amatore">Amatore</option>
+          <option value="Semiprofessionista">Semiprofessionista</option>
+          <option value="Professionista">Professionista</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="notice privacy">
+      <strong>Privacy 100% Locale (GDPR-free):</strong>
+      Nessun dato viene inviato online: calcoli e file restano solo su questo dispositivo e vengono eliminati al termine della sessione.
+    </div>
+
+    <div class="notice safety">
+      <strong>Avvertenza di Sicurezza in Acqua:</strong>
+      Eseguire il test esclusivamente in piscina sorvegliata con assistenza diretta di un istruttore o assistente qualificato.
+    </div>
+
+    <button id="btn-go-timer" type="button" class="btn btn-primary">VAI AL CRONOMETRO</button>
+
+    <footer class="app-footer">
+      Vasca fissa 25m • PWA Offline • <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">Licenza GNU AGPLv3</a>
+    </footer>
+  </section>
+
+  <!-- SCHERMATA 2: CRONOMETRO (6 MINUTI) -->
+  <section id="screen-timer" class="screen" aria-label="Cronometro 6 Minuti">
+    <div class="timer-topbar">
+      <div><span style="color:var(--mut)">Atleta:</span> <strong id="timer-athlete">—</strong></div>
+      <div class="pool-badge" style="padding:3px 9px;font-size:.76rem">VASCA 25m</div>
+    </div>
+
+    <button id="giant-tap-btn" type="button" class="state-ready" aria-live="polite">
+      <div id="tap-pill" class="tap-pill">PRONTO • START</div>
+      <div id="tap-countdown" class="tap-countdown">06:00.00</div>
+      <div class="tap-stats">
+        <div class="tap-stat"><span class="lbl">Vasca</span><span id="tap-lap-num" class="val">0</span></div>
+        <div class="tap-stat"><span class="lbl">Frazione</span><span id="tap-lap-time" class="val">00.00s</span></div>
+        <div class="tap-stat"><span class="lbl">Distanza</span><span id="tap-dist" class="val">0 m</span></div>
+      </div>
+      <div id="tap-hint" class="tap-hint">TOCCA ALL'IMMERSIONE DELLE VIE AEREE PER AVVIARE LA 1ª VASCA (APNEA)</div>
+      <div id="tap-last" class="tap-last"></div>
+    </button>
+
+    <div class="timer-controls">
+      <button id="btn-undo" type="button" class="btn btn-secondary" disabled>Annulla ultimo tocco</button>
+      <button id="btn-end-back" type="button" class="btn btn-secondary">Indietro (Pre-Test)</button>
+    </div>
+  </section>
+
+  <!-- MODAL RESIDUO 0-24m -->
+  <div id="modal-residual" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="res-title">
+    <div class="modal-card">
+      <h2 id="res-title">Tempo Scaduto (6:00)</h2>
+      <p style="margin:0;font-size:.86rem;color:#cbd5e1;text-align:center">Metri percorsi nell'ultima vasca incompleta (0–24 m):</p>
+      <div class="residual-box">
+        <div id="res-big" class="residual-big">+0 m</div>
+        <div id="res-formula" class="residual-formula">0 vasche × 25m = 0m + 0m residui = 0m</div>
+      </div>
+      <div class="slider-row">
+        <button id="btn-res-minus" type="button" class="btn btn-secondary btn-small">-1</button>
+        <input id="res-slider" type="range" min="0" max="24" step="1" value="0" aria-label="Metri residui" />
+        <button id="btn-res-plus" type="button" class="btn btn-secondary btn-small">+1</button>
+      </div>
+      <div id="res-chips" class="chips" style="justify-content:center">
+        <button type="button" class="chip selected" data-val="0">0m</button>
+        <button type="button" class="chip" data-val="5">5m</button>
+        <button type="button" class="chip" data-val="10">10m</button>
+        <button type="button" class="chip" data-val="12">12m</button>
+        <button type="button" class="chip" data-val="15">15m</button>
+        <button type="button" class="chip" data-val="20">20m</button>
+      </div>
+      <button id="btn-confirm-res" type="button" class="btn btn-primary">CONFERMA E VAI AL POST-TEST</button>
+    </div>
+  </div>
+
+  <!-- SCHERMATA 3: POST-TEST -->
+  <section id="screen-post" class="screen" aria-label="Post-Test ed Esportazione">
+    <header class="app-header">
+      <div class="brand">
+        <h1>POST-TEST &amp; REPORT</h1>
+        <small id="post-sub">Test Mardollo • Vasca 25m</small>
+      </div>
+      <div class="pool-badge">25m</div>
+    </header>
+
+    <div class="kpi-grid">
+      <div class="kpi-box"><div class="k-l">Distanza Tot.</div><div id="kpi-dist" class="k-v">0 m</div></div>
+      <div class="kpi-box"><div class="k-l">Vasche Apnea</div><div id="kpi-apnea-n" class="k-v blu">0</div></div>
+      <div class="kpi-box"><div class="k-l">Media Apnea</div><div id="kpi-apnea-m" class="k-v blu">—</div></div>
+      <div class="kpi-box"><div class="k-l">Media Recup.</div><div id="kpi-rec-m" class="k-v grn">—</div></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Soglie Fisiologiche Calcolate <span id="thresh-badge" class="opt"></span></h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th></th><th>A2</th><th>B1</th><th>B2</th><th>C1</th></tr>
+            <tr class="sub"><th>Metri</th><th>Capacità Aerobica</th><th>Soglia Anaerobica</th><th>VO2 Max</th><th>Tolleranza Lattato</th></tr>
+          </thead>
+          <tbody id="thresh-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Grafico Parziali (Apnea / Recupero)</h2>
+      <div class="chart-box"><canvas id="preview-canvas" width="1000" height="680"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Protocollo e Attrezzatura <span class="opt">Facoltativi</span></h2>
+      <div class="field">
+        <label>Riscaldamento pre-test</label>
+        <div id="warmup-chips" class="chips">
+          <button type="button" class="chip" data-val="Nuoto">Nuoto</button>
+          <button type="button" class="chip" data-val="Apnea">Apnea</button>
+          <button type="button" class="chip" data-val="Stretching">Stretching</button>
+          <button type="button" class="chip" data-val="Respirazione">Respirazione</button>
+          <button type="button" class="chip" data-val="Nulla">Nulla</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Posizione braccia</label>
+        <div id="arms-chips" class="chips">
+          <button type="button" class="chip" data-val="Lungo i fianchi">Lungo i fianchi</button>
+          <button type="button" class="chip" data-val="In avanti">In avanti</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="gear-fins-type">Tipo pinne</label>
+          <select id="gear-fins-type">
+            <option value="">— Seleziona —</option>
+            <option value="Bipinne">Bipinne</option>
+            <option value="Monopinna">Monopinna</option>
+            <option value="Senza pinne (DNF)">Senza pinne (DNF)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="gear-fins-mat">Materiale pinne</label>
+          <select id="gear-fins-mat">
+            <option value="">— Seleziona —</option>
+            <option value="Polimero">Polimero / Plastica</option>
+            <option value="Vetroresina">Vetroresina</option>
+            <option value="Carbonio">Carbonio</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label for="gear-wetsuit">Muta (mm)</label>
+          <input id="gear-wetsuit" type="number" min="0" max="10" step="0.5" inputmode="decimal" placeholder="0 = no" />
+        </div>
+        <div class="field">
+          <label for="gear-belt">Cintura (kg)</label>
+          <input id="gear-belt" type="number" min="0" max="20" step="0.25" inputmode="decimal" placeholder="Es. 2.0" />
+        </div>
+        <div class="field">
+          <label for="gear-neck">Collare (kg)</label>
+          <input id="gear-neck" type="number" min="0" max="10" step="0.25" inputmode="decimal" placeholder="Es. 1.5" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Sensazioni Fisiche (Scala 0–3) <span class="opt">Facoltative</span></h2>
+      <div class="sense-row" data-sense="gambeDure">
+        <div class="sense-head"><span>Gambe dure</span><span class="s-lbl" style="color:var(--mut)">—</span></div>
+        <div class="scale-03">
+          <button type="button" class="scale-btn" data-val="0">0 Nullo</button>
+          <button type="button" class="scale-btn" data-val="1">1 Poco</button>
+          <button type="button" class="scale-btn" data-val="2">2 Medio</button>
+          <button type="button" class="scale-btn" data-val="3">3 Tanto</button>
+        </div>
+      </div>
+      <div class="sense-row" data-sense="contrazioniLiv">
+        <div class="sense-head"><span>Contrazioni diaframmatiche</span><span class="s-lbl" style="color:var(--mut)">—</span></div>
+        <div class="scale-03">
+          <button type="button" class="scale-btn" data-val="0">0 Nullo</button>
+          <button type="button" class="scale-btn" data-val="1">1 Poco</button>
+          <button type="button" class="scale-btn" data-val="2">2 Medio</button>
+          <button type="button" class="scale-btn" data-val="3">3 Tanto</button>
+        </div>
+        <div class="field" style="margin-top:6px">
+          <label for="sense-contr-num">Numero contrazioni (opzionale)</label>
+          <input id="sense-contr-num" type="number" min="0" max="200" step="1" inputmode="numeric" placeholder="Es. 4" />
+        </div>
+      </div>
+      <div class="sense-row" data-sense="fiatoCorto">
+        <div class="sense-head"><span>Fiato corto</span><span class="s-lbl" style="color:var(--mut)">—</span></div>
+        <div class="scale-03">
+          <button type="button" class="scale-btn" data-val="0">0 Nullo</button>
+          <button type="button" class="scale-btn" data-val="1">1 Poco</button>
+          <button type="button" class="scale-btn" data-val="2">2 Medio</button>
+          <button type="button" class="scale-btn" data-val="3">3 Tanto</button>
+        </div>
+      </div>
+      <div class="sense-row" data-sense="doloreCaviglie">
+        <div class="sense-head"><span>Dolore alle caviglie</span><span class="s-lbl" style="color:var(--mut)">—</span></div>
+        <div class="scale-03">
+          <button type="button" class="scale-btn" data-val="0">0 Nullo</button>
+          <button type="button" class="scale-btn" data-val="1">1 Poco</button>
+          <button type="button" class="scale-btn" data-val="2">2 Medio</button>
+          <button type="button" class="scale-btn" data-val="3">3 Tanto</button>
+        </div>
+      </div>
+      <div class="field" style="margin-top:4px">
+        <label for="post-notes">Note libere</label>
+        <textarea id="post-notes" placeholder="Assetto, virate, rilassamento, sensazioni..."></textarea>
+      </div>
+    </div>
+
+    <div class="actions-stack">
+      <button id="btn-export-pdf" type="button" class="btn btn-primary">Condividi Report PDF</button>
+      <button id="btn-export-zip" type="button" class="btn btn-green">Esporta Dati Allenatore (ZIP/CSV)</button>
+      <button id="btn-reset-all" type="button" class="btn btn-danger">Nuovo Test / Pulisci Dati</button>
+    </div>
+
+    <footer class="app-footer">Elaborazione 100% locale in RAM • Nessun dato salvato • GNU AGPLv3</footer>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const POOL_M = 25;
+    const DURATION_MS = 360000; // 6:00
+    const DEBOUNCE_MS = 350;
+    const SCALE_TXT = { 0: 'Nullo (0)', 1: 'Poco (1)', 2: 'Medio (2)', 3: 'Tanto (3)' };
+
+    const freshState = () => ({
+      testDate: null,
+      athlete: { id: '', age: '', sex: '', height: '', weight: '', level: '' },
+      timer: { running: false, finished: false, startPerf: 0, elapsedMs: 0, lastLapMs: 0, lastTapPerf: 0, raf: null, iv: null, warn10: false },
+      laps: [],
+      resMeters: 0,
+      resTimeSec: 0,
+      post: {
+        warmup: [], arms: '', finsType: '', finsMat: '', wetsuitMm: '', beltKg: '', neckKg: '',
+        sensations: { gambeDure: null, contrazioniLiv: null, contrazioniNum: '', fiatoCorto: null, doloreCaviglie: null },
+        notes: ''
+      }
+    });
+
+    let S = freshState();
+    let audioCtx = null, wakeLock = null, undoT = null, endT = null, resetT = null;
+
+    const $ = (id) => document.getElementById(id);
+    const screens = { setup: $('screen-setup'), timer: $('screen-timer'), post: $('screen-post') };
+
+    const pad2 = (n) => String(Math.floor(n)).padStart(2, '0');
+    const pad3 = (n) => String(Math.floor(n)).padStart(3, '0');
+
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    function showScreen(k) {
+      Object.values(screens).forEach((s) => s.classList.remove('active'));
+      screens[k].classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function fmtMmSsCc(sec) {
+      if (sec === null || sec === undefined || isNaN(sec)) return '—';
+      const cs = Math.round(sec * 100);
+      return `${pad2(Math.floor(cs / 6000))}:${pad2(Math.floor((cs % 6000) / 100))}.${pad2(cs % 100)}`;
+    }
+
+    function fmtMmSsMmm(sec) {
+      if (sec === null || sec === undefined || isNaN(sec)) return '00:00.000';
+      const ms = Math.round(sec * 1000);
+      return `${pad2(Math.floor(ms / 60000))}:${pad2(Math.floor((ms % 60000) / 1000))}.${pad3(ms % 1000)}`;
+    }
+
+    function fmtSecMmm(sec, pad = false) {
+      if (sec === null || sec === undefined || isNaN(sec)) return '';
+      const s = sec.toFixed(3);
+      return pad && sec < 10 ? '0' + s : s;
+    }
+
+    function fmtCsvNum(v, dec = 2) {
+      if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '';
+      return Number(v).toFixed(dec).replace('.', ',');
+    }
+
+    function cleanCsv(s) {
+      return s ? String(s).replace(/;/g, ',').replace(/[\r\n]+/g, ' ').trim() : '';
+    }
+
+    function cleanFile(s, fb = 'Atleta') {
+      return (s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim() || fb;
+    }
+
+    function dateParts(d) {
+      const dt = d || new Date();
+      const y = dt.getFullYear(), m = pad2(dt.getMonth() + 1), day = pad2(dt.getDate());
+      const hh = pad2(dt.getHours()), mm = pad2(dt.getMinutes());
+      return { iso: `${y}-${m}-${day}`, compact: `${y}${m}${day}`, it: `${day}-${m}-${y}`, hm: `${hh}:${mm}`, hmC: `${hh}${mm}` };
+    }
+
+    function makeTestId() {
+      const dp = dateParts(S.testDate);
+      const tag = (S.athlete.id || 'ATLETA').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 15) || 'ATLETA';
+      return `${dp.compact}-${dp.hmC}-${tag}`;
+    }
+
+    function beep(freq = 880, dur = 0.12, vol = 0.25) {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        if (!audioCtx) audioCtx = new AC();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        g.gain.setValueAtTime(vol, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + dur);
+      } catch {}
+    }
+
+    function endAlarm() {
+      beep(1046, 0.25, 0.35);
+      setTimeout(() => beep(1046, 0.25, 0.35), 320);
+      setTimeout(() => beep(1318, 0.55, 0.4), 640);
+      if (navigator.vibrate) navigator.vibrate([350, 120, 350, 120, 600]);
+    }
+
+    async function lockScreen(on) {
+      if (!('wakeLock' in navigator)) return;
+      try {
+        if (on) wakeLock = await navigator.wakeLock.request('screen');
+        else if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+      } catch {}
+    }
+
+    /* Motore di calcolo soglie (50m, 75m, 100m, 125m) */
+    function computeResults() {
+      const ap = S.laps.filter((l) => l.phase === 'APNEA').map((l) => l.timeSec);
+      const rc = S.laps.filter((l) => l.phase === 'RECUPERO').map((l) => l.timeSec);
+      const totAp = ap.reduce((a, b) => a + b, 0);
+      const totRc = rc.reduce((a, b) => a + b, 0);
+      const avgAp = ap.length ? totAp / ap.length : null;
+      const avgRc = rc.length ? totRc / rc.length : null;
+
+      let avg25 = null, trimmed = false;
+      if (ap.length >= 3) {
+        const srt = [...ap].sort((a, b) => a - b).slice(1, -1);
+        avg25 = srt.reduce((a, b) => a + b, 0) / srt.length;
+        trimmed = true;
+      } else if (ap.length > 0) {
+        avg25 = avgAp;
+      }
+
+      const rowFor = (m, a2) => {
+        if (a2 === null) return { meters: m, A2: null, B1: null, B2: null, C1: null };
+        const b1 = a2 - (a2 * 0.10);
+        const b2 = b1 - (b1 * 0.10);
+        const c1 = b2 - (b2 * 0.05);
+        return { meters: m, A2: a2, B1: b1, B2: b2, C1: c1 };
+      };
+
+      let thresholds;
+      if (avg25 !== null) {
+        const a2_50 = avg25 * 2;
+        const a2_75 = a2_50 + (a2_50 / 2);
+        const a2_100 = a2_50 * 2;
+        const a2_125 = (a2_50 * 2) + (a2_50 / 2);
+        thresholds = [rowFor(50, a2_50), rowFor(75, a2_75), rowFor(100, a2_100), rowFor(125, a2_125)];
+      } else {
+        thresholds = [50, 75, 100, 125].map((m) => rowFor(m, null));
+      }
+
+      return {
+        apneaCnt: ap.length,
+        totalDist: S.laps.length * POOL_M + S.resMeters,
+        totalElapsedSec: S.timer.elapsedMs / 1000,
+        totAp, totRc, avgAp, avgRc, trimmed, thresholds, base50: thresholds[0]
+      };
+    }
+
+    /* Schermata 1 -> 2 */
+    $('btn-go-timer').addEventListener('click', () => {
+      S.athlete.id = $('athlete-id').value.trim();
+      S.athlete.age = $('athlete-age').value.trim();
+      S.athlete.sex = $('athlete-sex').value;
+      S.athlete.height = $('athlete-height').value.trim();
+      S.athlete.weight = $('athlete-weight').value.trim();
+      S.athlete.level = $('athlete-level').value;
+      $('timer-athlete').textContent = S.athlete.id || 'Atleta';
+      resetTimerReady();
+      showScreen('timer');
+      lockScreen(true);
+    });
+
+    /* Schermata 2: Cronometro */
+    function stopLoops() {
+      if (S.timer.raf) { cancelAnimationFrame(S.timer.raf); S.timer.raf = null; }
+      if (S.timer.iv) { clearInterval(S.timer.iv); S.timer.iv = null; }
+    }
+
+    function clearUndo() {
+      clearTimeout(undoT); undoT = null;
+      $('btn-undo').classList.remove('btn-confirm-warn');
+      $('btn-undo').textContent = 'Annulla ultimo tocco';
+    }
+
+    function clearEnd() {
+      clearTimeout(endT); endT = null;
+      $('btn-end-back').classList.remove('btn-confirm-warn');
+      $('btn-end-back').textContent = S.timer.running ? 'Termina prima dei 6:00' : 'Indietro (Pre-Test)';
+    }
+
+    function resetTimerReady() {
+      stopLoops();
+      S.timer = { running: false, finished: false, startPerf: 0, elapsedMs: 0, lastLapMs: 0, lastTapPerf: 0, raf: null, iv: null, warn10: false };
+      S.laps = [];
+      const b = $('giant-tap-btn');
+      b.className = 'state-ready';
+      $('tap-pill').textContent = 'PRONTO • START';
+      $('tap-countdown').textContent = '06:00.00';
+      $('tap-lap-num').textContent = '0';
+      $('tap-lap-time').textContent = '00.00s';
+      $('tap-dist').textContent = '0 m';
+      $('tap-hint').textContent = "TOCCA ALL'IMMERSIONE DELLE VIE AEREE PER AVVIARE LA 1ª VASCA (APNEA)";
+      $('tap-last').textContent = '';
+      $('btn-undo').disabled = true;
+      clearUndo(); clearEnd();
+    }
+
+    function updatePhaseUI() {
+      const n = S.laps.length + 1;
+      const isAp = S.laps.length % 2 === 0;
+      $('giant-tap-btn').className = isAp ? 'state-apnea' : 'state-recupero';
+      $('tap-pill').textContent = `VASCA ${n} • ${isAp ? 'APNEA' : 'RECUPERO'} (25m)`;
+      $('tap-hint').innerHTML = isAp
+        ? "TOCCA ALL'EMERSIONE<br>(FINE APNEA)"
+        : "TOCCA ALLA NUOVA IMMERSIONE<br>(FINE RECUPERO)";
+      $('tap-lap-num').textContent = String(n);
+      $('tap-dist').textContent = `${S.laps.length * POOL_M} m`;
+      $('btn-undo').disabled = S.laps.length === 0;
+      if (S.laps.length) {
+        const l = S.laps[S.laps.length - 1];
+        $('tap-last').textContent = `Ultimo: Vasca ${l.number} (${l.phase === 'APNEA' ? 'Apnea' : 'Recupero'}) — ${l.timeSec.toFixed(2)}s`;
+      } else {
+        $('tap-last').textContent = 'Nessuna vasca ancora completata';
+      }
+    }
+
+
+    function tick() {
+      if (!S.timer.running) return;
+      const el = performance.now() - S.timer.startPerf;
+      const rem = Math.max(0, DURATION_MS - el);
+      S.timer.elapsedMs = Math.min(el, DURATION_MS);
+      $('tap-countdown').textContent = fmtMmSsCc(rem / 1000);
+      $('tap-lap-time').textContent = `${Math.max(0, (S.timer.elapsedMs - S.timer.lastLapMs) / 1000).toFixed(2)}s`;
+      if (!S.timer.warn10 && rem <= 10000 && rem > 0) {
+        S.timer.warn10 = true;
+        beep(660, 0.14, 0.22);
+        if (navigator.vibrate) navigator.vibrate(120);
+      }
+      if (rem <= 0) { finishTest(DURATION_MS, true); return; }
+      S.timer.raf = requestAnimationFrame(tick);
+    }
+
+    function startTest() {
+      beep(880, 0.15, 0.3);
+      if (navigator.vibrate) navigator.vibrate(80);
+      S.testDate = new Date();
+      S.timer.running = true;
+      S.timer.finished = false;
+      S.timer.startPerf = performance.now();
+      S.timer.lastTapPerf = S.timer.startPerf;
+      S.timer.lastLapMs = 0;
+      S.timer.elapsedMs = 0;
+      S.timer.warn10 = false;
+      S.laps = [];
+      clearEnd();
+      updatePhaseUI();
+      S.timer.raf = requestAnimationFrame(tick);
+      S.timer.iv = setInterval(() => {
+        if (S.timer.running && performance.now() - S.timer.startPerf >= DURATION_MS) finishTest(DURATION_MS, true);
+      }, 200);
+    }
+
+    function addLap() {
+      const now = performance.now();
+      if (now - S.timer.lastTapPerf < DEBOUNCE_MS) return;
+      S.timer.lastTapPerf = now;
+      const el = Math.min(now - S.timer.startPerf, DURATION_MS);
+      const lapMs = Math.max(1, el - S.timer.lastLapMs);
+      const num = S.laps.length + 1;
+      const phase = num % 2 === 1 ? 'APNEA' : 'RECUPERO';
+      S.laps.push({ number: num, phase, distance: POOL_M, timeMs: lapMs, timeSec: lapMs / 1000, cumulativeMs: el });
+      S.timer.lastLapMs = el;
+      beep(phase === 'APNEA' ? 740 : 988, 0.08, 0.2);
+      if (navigator.vibrate) navigator.vibrate(45);
+      clearUndo();
+      updatePhaseUI();
+    }
+
+    function finishTest(finalMs, natural) {
+      if (S.timer.finished) return;
+      stopLoops();
+      S.timer.running = false;
+      S.timer.finished = true;
+      S.timer.elapsedMs = finalMs;
+      S.resTimeSec = Math.max(0, finalMs - S.timer.lastLapMs) / 1000;
+      S.resMeters = 0;
+      if (natural) { $('tap-countdown').textContent = '00:00.00'; endAlarm(); }
+      else beep(520, 0.25, 0.28);
+      $('res-title').textContent = natural ? 'Tempo Scaduto (6:00)!' : `Test Terminato (${fmtMmSsCc(finalMs / 1000)})`;
+      setResidual(0);
+      $('modal-residual').classList.add('open');
+    }
+
+    $('giant-tap-btn').addEventListener('click', () => {
+      if (S.timer.finished) return;
+      S.timer.running ? addLap() : startTest();
+    });
+
+    $('btn-undo').addEventListener('click', () => {
+      if (!S.timer.running || !S.laps.length) return;
+      if (!undoT) {
+        $('btn-undo').classList.add('btn-confirm-warn');
+        $('btn-undo').textContent = 'Tocca ancora per annullare';
+        undoT = setTimeout(clearUndo, 3500);
+      } else {
+        clearUndo();
+        S.laps.pop();
+        S.timer.lastLapMs = S.laps.length ? S.laps[S.laps.length - 1].cumulativeMs : 0;
+        if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+        updatePhaseUI();
+        toast('Ultimo parziale annullato');
+      }
+    });
+
+    $('btn-end-back').addEventListener('click', () => {
+      if (!S.timer.running) { lockScreen(false); showScreen('setup'); return; }
+      if (!endT) {
+        $('btn-end-back').classList.add('btn-confirm-warn');
+        $('btn-end-back').textContent = 'Conferma fine test?';
+        endT = setTimeout(clearEnd, 3500);
+      } else {
+        clearEnd();
+        finishTest(Math.min(performance.now() - S.timer.startPerf, DURATION_MS), false);
+      }
+    });
+
+    /* Modal Residuo */
+    function setResidual(v) {
+      const m = Math.max(0, Math.min(24, parseInt(v, 10) || 0));
+      S.resMeters = m;
+      $('res-slider').value = m;
+      $('res-big').textContent = `+${m} m`;
+      const c = S.laps.length, cd = c * POOL_M;
+      $('res-formula').textContent = `${c} vasche × 25m = ${cd}m + ${m}m residui = ${cd + m}m`;
+      $('res-chips').querySelectorAll('.chip').forEach((ch) => ch.classList.toggle('selected', Number(ch.dataset.val) === m));
+    }
+
+    $('res-slider').addEventListener('input', (e) => setResidual(e.target.value));
+    $('btn-res-minus').addEventListener('click', () => setResidual(S.resMeters - 1));
+    $('btn-res-plus').addEventListener('click', () => setResidual(S.resMeters + 1));
+    $('res-chips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) setResidual(c.dataset.val); });
+    $('btn-confirm-res').addEventListener('click', () => {
+      $('modal-residual').classList.remove('open');
+      lockScreen(false);
+      renderPost();
+      showScreen('post');
+    });
+
+    /* Schermata 3 & Grafico */
+    function renderPost() {
+      const r = computeResults(), dp = dateParts(S.testDate);
+      $('post-sub').textContent = `${S.athlete.id ? S.athlete.id + ' • ' : ''}${dp.it} • Vasca 25m`;
+      $('kpi-dist').textContent = `${r.totalDist} m`;
+      $('kpi-apnea-n').textContent = String(r.apneaCnt);
+      $('kpi-apnea-m').textContent = r.avgAp !== null ? `${r.avgAp.toFixed(2)}s` : '—';
+      $('kpi-rec-m').textContent = r.avgRc !== null ? `${r.avgRc.toFixed(2)}s` : '—';
+      $('thresh-badge').textContent = r.apneaCnt >= 3 ? 'Media senza min/max' : (r.apneaCnt > 0 ? 'Media semplice (<3 vasche)' : 'Nessuna vasca apnea');
+      $('thresh-tbody').innerHTML = r.thresholds.map((t) =>
+        `<tr><td><strong>${t.meters}</strong></td><td>${fmtMmSsCc(t.A2)}</td><td>${fmtMmSsCc(t.B1)}</td><td>${fmtMmSsCc(t.B2)}</td><td>${fmtMmSsCc(t.C1)}</td></tr>`
+      ).join('');
+      drawChart($('preview-canvas'), r);
+    }
+
+    function drawChart(canvas, r) {
+      const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+      const pL = 108, pR = 26, pT = 60, pB = 66, pW = W - pL - pR, pH = H - pT - pB;
+
+      // Legenda
+      ctx.font = 'bold 20px Helvetica,Arial,sans-serif';
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      const l1 = pL + pW * 0.16, l2 = pL + pW * 0.54;
+      ctx.fillStyle = '#00a2ff'; ctx.fillRect(l1, 16, 18, 18);
+      ctx.fillStyle = '#111827'; ctx.fillText('APNEA', l1 + 26, 25);
+      ctx.fillStyle = '#60d937'; ctx.fillRect(l2, 16, 18, 18);
+      ctx.fillStyle = '#111827'; ctx.fillText('RECUPERO ATTIVO', l2 + 26, 25);
+
+      const vals = S.laps.map((l) => l.timeSec);
+      if (r.avgAp) vals.push(r.avgAp);
+      if (r.avgRc) vals.push(r.avgRc);
+      const yMax = vals.length ? Math.max(...vals) : 30;
+
+      // Griglia e asse Y (10 divisioni)
+      ctx.font = '18px Helvetica,Arial,sans-serif'; ctx.textAlign = 'right';
+      for (let i = 1; i <= 10; i++) {
+        const v = (yMax / 10) * i, y = pT + pH - (v / yMax) * pH;
+        ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + pW, y); ctx.stroke();
+        ctx.fillStyle = '#111827'; ctx.fillText(fmtSecMmm(v, true), pL - 12, y);
+      }
+
+      ctx.strokeStyle = '#111827'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(pL, pT); ctx.lineTo(pL, pT + pH); ctx.lineTo(pL + pW, pT + pH); ctx.stroke();
+
+      ctx.save();
+      ctx.translate(28, pT + pH / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.font = 'bold 20px Helvetica,Arial,sans-serif'; ctx.fillStyle = '#111827';
+      ctx.fillText('TEMPO', 0, 0);
+      ctx.restore();
+
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.font = 'bold 20px Helvetica,Arial,sans-serif'; ctx.fillStyle = '#111827';
+      ctx.fillText('VASCHE', pL + pW / 2, H - 8);
+
+      const slots = Math.max(20, S.laps.length);
+      const uW = pW / (slots + 2.4), bW = uW * 0.72;
+
+      S.laps.forEach((l, i) => {
+        const cx = pL + (i + 0.5) * uW, bh = Math.max(2, (l.timeSec / yMax) * pH);
+        ctx.fillStyle = l.phase === 'APNEA' ? '#00a2ff' : '#60d937';
+        ctx.fillRect(cx - bW / 2, pT + pH - bh, bW, bh);
+      });
+
+      ctx.font = '18px Helvetica,Arial,sans-serif'; ctx.fillStyle = '#111827'; ctx.textBaseline = 'top';
+      for (let n = 1; n <= slots; n += 4) ctx.fillText(String(n), pL + (n - 0.5) * uW, pT + pH + 10);
+
+      const mStart = slots + 0.35;
+      const mApX = pL + (mStart + 0.5) * uW, mRcX = pL + (mStart + 1.5) * uW;
+      if (r.avgAp !== null) {
+        const h = Math.max(2, (r.avgAp / yMax) * pH);
+        ctx.fillStyle = '#00a2ff'; ctx.fillRect(mApX - bW / 2, pT + pH - h, bW, h);
+      }
+      if (r.avgRc !== null) {
+        const h = Math.max(2, (r.avgRc / yMax) * pH);
+        ctx.fillStyle = '#60d937'; ctx.fillRect(mRcX - bW / 2, pT + pH - h, bW, h);
+      }
+      ctx.fillStyle = '#111827'; ctx.font = 'bold 18px Helvetica,Arial,sans-serif';
+      ctx.fillText('MEDIA', (mApX + mRcX) / 2, pT + pH + 10);
+    }
+
+    /* Selettori Post-Test */
+    $('warmup-chips').addEventListener('click', (e) => {
+      const c = e.target.closest('.chip'); if (!c) return;
+      const v = c.dataset.val;
+      if (v === 'Nulla') {
+        const on = c.classList.contains('selected');
+        $('warmup-chips').querySelectorAll('.chip').forEach((x) => x.classList.remove('selected'));
+        S.post.warmup = on ? [] : ['Nulla'];
+        if (!on) c.classList.add('selected');
+      } else {
+        const n = $('warmup-chips').querySelector('[data-val="Nulla"]');
+        if (n) n.classList.remove('selected');
+        S.post.warmup = S.post.warmup.filter((w) => w !== 'Nulla');
+        c.classList.toggle('selected');
+        S.post.warmup = c.classList.contains('selected') ? [...S.post.warmup, v] : S.post.warmup.filter((w) => w !== v);
+      }
+    });
+
+    $('arms-chips').addEventListener('click', (e) => {
+      const c = e.target.closest('.chip'); if (!c) return;
+      const on = c.classList.contains('selected');
+      $('arms-chips').querySelectorAll('.chip').forEach((x) => x.classList.remove('selected'));
+      S.post.arms = on ? '' : c.dataset.val;
+      if (!on) c.classList.add('selected');
+    });
+
+    document.querySelectorAll('.sense-row').forEach((row) => {
+      const k = row.dataset.sense, lbl = row.querySelector('.s-lbl');
+      row.addEventListener('click', (e) => {
+        const b = e.target.closest('.scale-btn'); if (!b) return;
+        const v = Number(b.dataset.val), on = b.classList.contains('active');
+        row.querySelectorAll('.scale-btn').forEach((x) => x.classList.remove('active'));
+        S.post.sensations[k] = on ? null : v;
+        lbl.textContent = on ? '—' : SCALE_TXT[v];
+        if (!on) b.classList.add('active');
+      });
+    });
+
+    function readPost() {
+      S.post.finsType = $('gear-fins-type').value;
+      S.post.finsMat = $('gear-fins-mat').value;
+      S.post.wetsuitMm = $('gear-wetsuit').value.trim();
+      S.post.beltKg = $('gear-belt').value.trim();
+      S.post.neckKg = $('gear-neck').value.trim();
+      S.post.sensations.contrazioniNum = $('sense-contr-num').value.trim();
+      S.post.notes = $('post-notes').value.trim();
+    }
+
+    function finsText() {
+      const { finsType: t, finsMat: m } = S.post;
+      if (t && m && !t.includes('Senza')) return `${t} (${m})`;
+      return t || m || '';
+    }
+
+    /* Condivisione Web Share API o Download */
+    async function shareOrSave(blob, filename, title) {
+      const file = new File([blob], filename, { type: blob.type });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title, text: title });
+          toast('File pronto per la condivisione');
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      toast(`Scaricato: ${filename}`);
+    }
+    
+    /* Esportazione PDF */
+    $('btn-export-pdf').addEventListener('click', async () => {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        toast('Libreria PDF non caricata: apri l’app online almeno una volta.');
+        return;
+      }
+      readPost();
+      const r = computeResults(), dp = dateParts(S.testDate);
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const mX = 10, pW = 210, cW = 190;
+
+      // Helper tempi in formato ss.cc
+      const fmtSsCc = (sec) => {
+        if (sec === null || sec === undefined || Number.isNaN(Number(sec))) return '—';
+        return Math.max(0, Number(sec)).toFixed(2);
+      };
+
+      // Intestazione
+      const titleY = 14, titleSize = 13;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(titleSize); doc.setTextColor(15, 23, 42);
+      doc.text('TEST MARDOLLO', mX, titleY);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.4); doc.setTextColor(51, 65, 85);
+      doc.text(`DATA: ${dp.it}  |  VASCA: 25m  |  DISTANZA TOTALE: ${r.totalDist} m`, mX, 19.5);
+
+      // Banda grigia NOME (stessa altezza del titolo "TEST MARDOLLO", allineata e ancorata a destra)
+      const nW = 104, nX = pW - mX - nW;
+      const nH = titleSize * 0.3528 * 1.25; // ~5.73 mm, pari all'altezza del titolo
+      const nY = titleY - nH * 0.78;
+      doc.setFillColor(196, 200, 204); doc.setDrawColor(148, 163, 184); doc.setLineWidth(0.25);
+      doc.rect(nX, nY, nW, nH, 'FD');
+      const nMidY = nY + nH / 2 + 1.1;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 23, 42);
+      doc.text('NOME:', nX + 2.5, nMidY);
+      doc.setFontSize(9.5);
+      doc.text((S.athlete.id || 'NON INDICATO').toUpperCase(), nX + nW / 2 + 5, nMidY, { align: 'center', maxWidth: nW - 18 });
+
+      // Tabella parziali sinistra
+      const topY = 24, cols = [15.5, 12.5, 18, 18, 18], tblW = 82;
+      const maxRows = Math.max(20, S.laps.length);
+      const hasRes = S.resMeters > 0 || S.resTimeSec > 0.05;
+      const totRows = 1 + maxRows + (hasRes ? 1 : 0) + 2;
+      const hH = 6.2, rH = Math.min(4.5, (114 - hH) / totRows);
+
+      doc.setFillColor(226, 232, 240); doc.setDrawColor(148, 163, 184); doc.setLineWidth(0.2);
+      doc.rect(mX, topY, tblW, hH, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.setTextColor(15, 23, 42);
+      let x = mX;
+      ['N. VASCHE', 'METRI', 'TEMPO', 'APNEA', 'RECUPERO'].forEach((h, i) => {
+        doc.rect(x, topY, cols[i], hH, 'S');
+        doc.text(h, x + cols[i] / 2, topY + hH / 2 + 1.1, { align: 'center' });
+        x += cols[i];
+      });
+
+      let curY = topY + hH;
+      const row = (cells, bg, bold) => {
+        if (bg) { doc.setFillColor(...bg); doc.rect(mX, curY, tblW, rH, 'F'); }
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        doc.setFontSize(bold ? 6.7 : 6.6);
+        doc.setTextColor(15, 23, 42);
+        let cx = mX;
+        cells.forEach((t, i) => {
+          doc.rect(cx, curY, cols[i], rH, 'S');
+          if (t !== '') doc.text(String(t), cx + cols[i] / 2, curY + rH / 2 + 1.0, { align: 'center' });
+          cx += cols[i];
+        });
+        curY += rH;
+      };
+
+      row(['PARTENZA', '0', '0.00', '', ''], [248, 250, 252], false);
+      for (let i = 1; i <= maxRows; i++) {
+        const l = S.laps[i - 1], m = i * POOL_M;
+        if (l) {
+          const ts = fmtSsCc(l.timeSec);
+          row([i, m, ts, l.phase === 'APNEA' ? ts : '', l.phase === 'RECUPERO' ? ts : ''], l.phase === 'APNEA' ? [240, 249, 255] : [240, 253, 244], false);
+        } else {
+          row([i, m, '', '', ''], null, false);
+        }
+      }
+      if (hasRes) row(['RESIDUO', `+${S.resMeters}m`, fmtSsCc(S.resTimeSec), '', ''], [254, 249, 195], false);
+      row(['TOT.', `${r.totalDist}m`, fmtSsCc(r.totalElapsedSec), fmtSsCc(r.totAp), fmtSsCc(r.totRc)], [226, 232, 240], true);
+      row(['MEDIA', '', '', r.avgAp !== null ? `${Math.round(r.avgAp)}s (${r.avgAp.toFixed(2)}s)` : '—', r.avgRc !== null ? `${Math.round(r.avgRc)}s (${r.avgRc.toFixed(2)}s)` : '—'], [241, 245, 249], true);
+
+      // Grafico alta risoluzione destra
+      const cv = document.createElement('canvas'); cv.width = 1200; cv.height = 1040;
+      drawChart(cv, r);
+      const chH = Math.max(96, curY - topY);
+      doc.addImage(cv.toDataURL('image/png'), 'PNG', 95, topY, 105, chH);
+
+      // Tabella Soglie (Formato soglie.xlsx)
+      let y = Math.max(curY, topY + chH) + 7;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 23, 42);
+      doc.text('SOGLIE DI ALLENAMENTO CALCOLATE (ss.cc)', mX, y);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.4); doc.setTextColor(100, 116, 139);
+      doc.text(r.apneaCnt >= 3 ? 'A2 50m: media vasche apnea (25m) esclusi min/max × 2' : 'A2 50m: media semplice vasche apnea (<3 vasche) × 2', pW - mX, y, { align: 'right' });
+      y += 3;
+
+      const sCols = [26, 41, 41, 41, 41], sBg = [[226,232,240],[186,230,253],[187,247,208],[254,240,138],[254,202,202]];
+      let sx = mX;
+      ['', 'A2', 'B1', 'B2', 'C1'].forEach((t, i) => {
+        doc.setFillColor(...sBg[i]); doc.rect(sx, y, sCols[i], 6.2, 'FD');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(15, 23, 42);
+        doc.text(t, sx + sCols[i] / 2, y + 4.4, { align: 'center' });
+        sx += sCols[i];
+      });
+      y += 6.2; sx = mX;
+      ['Metri', 'Capacità Aerobica', 'Soglia Anaerobica', 'VO2 Max', 'Tolleranza Lattato'].forEach((t, i) => {
+        doc.setFillColor(241, 245, 249); doc.rect(sx, y, sCols[i], 5.8, 'FD');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.8); doc.setTextColor(51, 65, 85);
+        doc.text(t, sx + sCols[i] / 2, y + 4.0, { align: 'center' });
+        sx += sCols[i];
+      });
+      y += 5.8;
+
+      r.thresholds.forEach((tr, idx) => {
+        sx = mX;
+        const bg = idx % 2 ? [248, 250, 252] : [255, 255, 255];
+        [tr.meters, fmtSsCc(tr.A2), fmtSsCc(tr.B1), fmtSsCc(tr.B2), fmtSsCc(tr.C1)].forEach((t, i) => {
+          doc.setFillColor(...bg); doc.rect(sx, y, sCols[i], 6.5, 'FD');
+          doc.setFont('helvetica', i === 0 ? 'bold' : 'normal'); doc.setFontSize(9); doc.setTextColor(15, 23, 42);
+          doc.text(String(t), sx + sCols[i] / 2, y + 4.5, { align: 'center' });
+          sx += sCols[i];
+        });
+        y += 6.5;
+      });
+
+      // Box Post-Test facoltativi
+      y += 7;
+      const boxH = Math.max(46, 282 - y), halfW = (cW - 4) / 2;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 23, 42);
+      doc.text('PROFILO, ATTREZZATURA E SENSAZIONI POST-TEST', mX, y);
+      y += 3;
+      doc.setFillColor(248, 250, 252); doc.setDrawColor(148, 163, 184);
+      doc.roundedRect(mX, y, halfW, boxH, 2, 2, 'FD');
+      doc.roundedRect(mX + halfW + 4, y, halfW, boxH, 2, 2, 'FD');
+
+      const drawKv = (bx, title, items) => {
+        let ky = y + 5.5;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.2); doc.setTextColor(2, 132, 199);
+        doc.text(title, bx + 3, ky); ky += 4.8;
+        doc.setFontSize(7.8);
+        items.forEach(([k, v]) => {
+          if (ky > y + boxH - 3) return;
+          doc.setFont('helvetica', 'bold'); doc.setTextColor(51, 65, 85);
+          const lb = `${k}: `; doc.text(lb, bx + 3, ky);
+          const lw = doc.getTextWidth(lb);
+          doc.setFont('helvetica', 'normal'); doc.setTextColor(15, 23, 42);
+          const lines = doc.splitTextToSize(v || '—', halfW - lw - 6);
+          doc.text(lines[0], bx + 3 + lw, ky);
+          for (let li = 1; li < Math.min(lines.length, 3); li++) {
+            ky += 3.8;
+            if (ky <= y + boxH - 3) doc.text(lines[li], bx + 3, ky);
+          }
+          ky += 4.6;
+        });
+      };
+
+      const prof = [
+        S.athlete.age ? `${S.athlete.age} anni` : '', S.athlete.sex,
+        S.athlete.height ? `${S.athlete.height} cm` : '', S.athlete.weight ? `${S.athlete.weight} kg` : '', S.athlete.level
+      ].filter(Boolean).join(' • ');
+
+      drawKv(mX, 'PROFILO E ATTREZZATURA', [
+        ['Profilo', prof || 'Non inserito'],
+        ['Riscaldamento', S.post.warmup.length ? S.post.warmup.join(', ') : 'Non indicato'],
+        ['Posizione braccia', S.post.arms || 'Non indicata'],
+        ['Pinne', finsText() || 'Non indicate'],
+        ['Muta', S.post.wetsuitMm !== '' ? `${S.post.wetsuitMm} mm` : 'Non indicata'],
+        ['Zavorra cintura', S.post.beltKg !== '' ? `${S.post.beltKg} kg` : 'Non indicata'],
+        ['Collare', S.post.neckKg !== '' ? `${S.post.neckKg} kg` : 'Non indicato']
+      ]);
+
+      const sn = S.post.sensations;
+      const cTxt = sn.contrazioniLiv !== null
+        ? `${SCALE_TXT[sn.contrazioniLiv]}${sn.contrazioniNum !== '' ? ` (n° ${sn.contrazioniNum})` : ''}`
+        : (sn.contrazioniNum !== '' ? `n° ${sn.contrazioniNum}` : 'Non indicato');
+
+      drawKv(mX + halfW + 4, 'SENSAZIONI FISICHE (0–3) E NOTE', [
+        ['Gambe dure', sn.gambeDure !== null ? SCALE_TXT[sn.gambeDure] : 'Non indicato'],
+        ['Contrazioni diafr.', cTxt],
+        ['Fiato corto', sn.fiatoCorto !== null ? SCALE_TXT[sn.fiatoCorto] : 'Non indicato'],
+        ['Dolore caviglie', sn.doloreCaviglie !== null ? SCALE_TXT[sn.doloreCaviglie] : 'Non indicato'],
+        ['Note libere', S.post.notes || 'Nessuna nota']
+      ]);
+
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(100, 116, 139);
+      doc.text(`Test Mardollo PWA (https://testmardollo.github.io/TestMardollo/) • Elaborazione 100% locale • ID: ${makeTestId()} • GNU AGPLv3`, pW / 2, 292, { align: 'center' });
+
+      const aPart = cleanFile(S.athlete.id, 'Atleta');
+      const fname = `TestMardollo - ${dp.compact} - ${aPart}.pdf`;
+      await shareOrSave(doc.output('blob'), fname, `Report Test Mardollo — ${aPart}`);
+    });
+
+    /* Esportazione ZIP / Doppio CSV (UTF-8 BOM, ';', virgola decimale) */
+    $('btn-export-zip').addEventListener('click', async () => {
+      if (!window.JSZip) {
+        toast('Libreria ZIP non caricata: apri l’app online almeno una volta.');
+        return;
+      }
+      readPost();
+      const r = computeResults(), dp = dateParts(S.testDate), tid = makeTestId();
+      const aid = cleanCsv(S.athlete.id || 'Atleta'), BOM = '\uFEFF', sn = S.post.sensations;
+
+      const sumH = [
+        'TEST_ID','Data','Ora','Atleta_ID','Vasca_m','Eta','Sesso','Peso_kg','Altezza_cm','Livello',
+        'Pinne','Muta_mm','Zavorra_Cintura_kg','Collare_kg','Riscaldamento','Posizione_Braccia',
+        'Vasche_Apnea_Complete','Residuo_m','Distanza_Totale_m','Tempo_Tot_Apnea_s','Tempo_Tot_Rec_s',
+        'Media_Apnea_s','Media_Rec_s','Zona_A2_s','Zona_B1_s','Zona_B2_s','Zona_C1_s',
+        'Gambe_Dure','Contrazioni_Liv','Contrazioni_Num','Fiato_Corto','Dolore_Caviglie','Note'
+      ];
+      const sumR = [
+        tid, dp.iso, dp.hm, aid, String(POOL_M), S.athlete.age, S.athlete.sex,
+        fmtCsvNum(S.athlete.weight, 1), S.athlete.height, cleanCsv(S.athlete.level),
+        cleanCsv(finsText()), fmtCsvNum(S.post.wetsuitMm, 1), fmtCsvNum(S.post.beltKg, 2), fmtCsvNum(S.post.neckKg, 2),
+        cleanCsv(S.post.warmup.join(' + ')), cleanCsv(S.post.arms),
+        String(r.apneaCnt), String(S.resMeters), String(r.totalDist),
+        fmtCsvNum(r.totAp, 2), fmtCsvNum(r.totRc, 2), fmtCsvNum(r.avgAp, 2), fmtCsvNum(r.avgRc, 2),
+        fmtCsvNum(r.base50.A2, 2), fmtCsvNum(r.base50.B1, 2), fmtCsvNum(r.base50.B2, 2), fmtCsvNum(r.base50.C1, 2),
+        sn.gambeDure !== null ? String(sn.gambeDure) : '', sn.contrazioniLiv !== null ? String(sn.contrazioniLiv) : '',
+        sn.contrazioniNum, sn.fiatoCorto !== null ? String(sn.fiatoCorto) : '', sn.doloreCaviglie !== null ? String(sn.doloreCaviglie) : '',
+        cleanCsv(S.post.notes)
+      ];
+      const sumCsv = BOM + sumH.join(';') + '\r\n' + sumR.join(';') + '\r\n';
+
+      const vasLines = ['TEST_ID;Data;Atleta_ID;Numero_Vasca;Fase;Distanza_m;Tempo_s;Velocita_ms'];
+      S.laps.forEach((l) => {
+        const sp = l.timeSec > 0 ? l.distance / l.timeSec : 0;
+        vasLines.push([tid, dp.iso, aid, l.number, l.phase, fmtCsvNum(l.distance, 0), fmtCsvNum(l.timeSec, 2), fmtCsvNum(sp, 2)].join(';'));
+      });
+      if (S.resMeters > 0 || S.resTimeSec > 0.05) {
+        const sp = S.resMeters > 0 && S.resTimeSec > 0 ? S.resMeters / S.resTimeSec : 0;
+        vasLines.push([tid, dp.iso, aid, S.laps.length + 1, 'RESIDUO', fmtCsvNum(S.resMeters, 0), fmtCsvNum(S.resTimeSec, 2), fmtCsvNum(sp, 2)].join(';'));
+      }
+      const vasCsv = BOM + vasLines.join('\r\n') + '\r\n';
+
+      const zip = new window.JSZip();
+      zip.file('mardollo_summary.csv', sumCsv);
+      zip.file('mardollo_vasche.csv', vasCsv);
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const zipName = `TestMardollo_${dp.compact}_${cleanFile(S.athlete.id, 'Atleta').replace(/\s+/g, '')}.zip`;
+      await shareOrSave(blob, zipName, `Dati Allenatore Test Mardollo — ${aid}`);
+    });
+
+    /* Reset completo RAM e form */
+    function clearReset() {
+      clearTimeout(resetT); resetT = null;
+      $('btn-reset-all').classList.remove('btn-confirm-warn');
+      $('btn-reset-all').textContent = 'Nuovo Test / Pulisci Dati';
+    }
+
+    $('btn-reset-all').addEventListener('click', () => {
+      if (!resetT) {
+        $('btn-reset-all').classList.add('btn-confirm-warn');
+        $('btn-reset-all').textContent = 'Tocca ancora per azzerare tutto';
+        resetT = setTimeout(clearReset, 4000);
+        return;
+      }
+      stopLoops(); lockScreen(false);
+      S = freshState();
+      document.querySelectorAll('input[type="text"],input[type="number"],textarea').forEach((i) => { i.value = ''; });
+      document.querySelectorAll('select').forEach((s) => { s.selectedIndex = 0; });
+      document.querySelectorAll('#warmup-chips .chip,#arms-chips .chip').forEach((c) => c.classList.remove('selected'));
+      document.querySelectorAll('.sense-row').forEach((r) => {
+        r.querySelectorAll('.scale-btn').forEach((b) => b.classList.remove('active'));
+        r.querySelector('.s-lbl').textContent = '—';
+      });
+      $('preview-canvas').getContext('2d').clearRect(0, 0, 1000, 680);
+      clearReset();
+      resetTimerReady();
+      showScreen('setup');
+      toast('Tutti i dati della sessione sono stati cancellati');
+    });
+
+    /* Registrazione Service Worker PWA */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+  })();
+  </script>
+</body>
+</html>

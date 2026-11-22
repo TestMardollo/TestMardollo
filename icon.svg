@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b2545" />
+      <stop offset="100%" stop-color="#0077cc" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)" />
+  <circle cx="256" cy="242" r="144" fill="none" stroke="#ffffff" stroke-width="24" />
+  <rect x="224" y="64" width="64" height="24" rx="10" fill="#ffffff" />
+  <line x1="256" y1="242" x2="256" y2="146" stroke="#00c2ff" stroke-width="22" stroke-linecap="round" />
+  <line x1="256" y1="242" x2="326" y2="278" stroke="#66d136" stroke-width="22" stroke-linecap="round" />
+  <circle cx="256" cy="242" r="18" fill="#ffffff" />
+  <text x="256" y="470" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="54" font-weight="800" fill="#ffffff" letter-spacing="4">Mardollo</text>
+</svg>

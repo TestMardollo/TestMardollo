@@ -1,0 +1,20 @@
+{
+  "name": "Test Mardollo — Cronometro Apnea 25m",
+  "short_name": "Test Mardollo",
+  "description": "Web App 100% locale e offline per l'esecuzione del Test Mardollo (6 minuti, vasca 25m) con calcolo soglie fisiologiche, report PDF ed esportazione CSV.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b192c",
+  "theme_color": "#0077cc",
+  "lang": "it-IT",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
