@@ -1,6 +1,6 @@
 /*
  * Test Mardollo PWA — Service Worker
- * Copyright (C) 2026 TestMardollo
+ * Copyright (C) 2026 Zonta Mattia
  * License: GNU Affero General Public License v3.0 (AGPL-3.0)
  */
 

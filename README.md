@@ -96,4 +96,5 @@ Progetto statico in puro **HTML5 / CSS3 / JavaScript Vanilla** ospitato su GitHu
 
 ## Licenza
 
+Copyright (C) 2026 **Zonta Mattia**.
 Distribuito sotto licenza **GNU Affero General Public License v3.0 (GNU AGPLv3)**. Consulta il file [LICENSE](./LICENSE) per i dettagli completi.
